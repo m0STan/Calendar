@@ -22,20 +22,24 @@ def get_all_days(db: Session = Depends(get_db)):
     return holidays
 
 
-@app.get("/get_day_info/{month}/{number}")
+@app.get("/get_day_info/{month}/{number}", response_model=HolidayBase)
 def get_day(month: str, number: int, db: Session = Depends(get_db)):
     db_day = db.query(Holiday).filter_by(month=month, number=number).one_or_none()
-    if not db_day and month in Naming.items() and number <= monthrange(datetime.date.today().year, Naming.keys()[list(Naming.values().index(month))])[1]:
-        return {
-            "year": datetime.date.today().year,
-            "number": number,
-            "type": "Рабочий день",
-            "month": month
-        }
-    elif db_day:
-        return db_day
-    else:
-        return {"status": 400, "Error": "Неккоректные данные"}
+    try:
+        if not db_day and month in Naming.values() and number <= monthrange(datetime.date.today().year, list(Naming.values()).index(month)+1)[1]:
+            return {
+                "year": datetime.date.today().year,
+                "month": month,
+                "number": number,
+                "type": "Рабочий день",
+                "info": None
+            }
+        elif db_day:
+            return db_day
+    except Exception as e:
+        return e
+
+
 
 
 @app.post("/update_day_info/{month}/{number}", response_model=HolidayBase)
