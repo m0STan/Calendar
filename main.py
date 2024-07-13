@@ -2,10 +2,10 @@ import datetime
 from calendar import monthrange
 from typing import List, Type, Optional, Annotated
 import uvicorn
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session, Query
+from fastapi import FastAPI, Depends, Query
+from sqlalchemy.orm import Session
 from database import get_db
-from models.models import Holiday, HolidayBase
+from models.models import Holiday, HolidayBase, HolidayError
 from config import TOKEN
 from script import day_parser
 from const import Naming
@@ -22,27 +22,16 @@ def get_all_days(db: Session = Depends(get_db)):
     return holidays
 
 
-@app.get("/get_day_info/{month}/{number}", response_model=HolidayBase)
+@app.get("/get_day_info/{month}/{number}", response_model=HolidayError, response_model_exclude_none=True)
 def get_day(month: str, number: int, db: Session = Depends(get_db)):
     db_day = db.query(Holiday).filter_by(month=month, number=number).one_or_none()
-    try:
-        if not db_day and month in Naming.values() and number <= monthrange(datetime.date.today().year, list(Naming.values()).index(month)+1)[1]:
-            return {
-                "year": datetime.date.today().year,
-                "month": month,
-                "number": number,
-                "type": "Рабочий день",
-                "info": None
-            }
-        elif db_day:
-            return db_day
-    except Exception as e:
-        return e
+    if db_day:
+        return db_day
+    else:
+        return {"status": 400, "msg": "Day not exist"}
 
 
-
-
-@app.post("/update_day_info/{month}/{number}", response_model=HolidayBase)
+@app.post("/update_day_info/{month}/{number}", response_model=HolidayError, response_model_exclude_none=True)
 def update_day(month: str, number: int, info: str = None, db: Session = Depends(get_db)):
     db_day = db.query(Holiday).filter_by(month=month, number=number).one_or_none()
     if db_day:
@@ -50,34 +39,36 @@ def update_day(month: str, number: int, info: str = None, db: Session = Depends(
         db.commit()
         db.refresh(db_day)
         return db_day
+    else:
+        return {"status": 400, "msg": "Day not exist"}
 
 
-@app.post("/add_day/{year}/{month}/{number}")
-def add_day(year: int, month: str, number: int, type: str, info: str, db: Session = Depends(get_db)):
+@app.post("/add_day/{year}/{month}/{number}", response_model=HolidayBase)
+def add_day(year: int, month: str, number: int, type: str, info: str = None, db: Session = Depends(get_db)):
     db_day = Holiday(year=year, month=month, number=number, type=type, info=info)
     db.add(db_day)
     db.commit()
     db.refresh(db_day)
-    return {"Code": "Successfully added", "Day": db_day}
+    return db_day
 
 
-@app.delete("/delete_day/{month}/{number}/")
+@app.delete("/delete_day/{month}/{number}/", response_model=HolidayError, response_model_exclude_none=True)
 def delete_day(month: str, number: int, db: Session = Depends(get_db)):
     db_day = db.query(Holiday).filter(Holiday.month == month and Holiday.number == number).first()
     db.delete(db_day)
     db.commit()
-    return {"Code": "Successfully deleted", "Day": db_day}
+    return {"status": 200, "msg": "Successfully deleted"}
 
 
-@app.get("/update_database/{token}")
-def update_database(token, db: Session = Depends(get_db)):
+@app.get("/update_database/{token}/", )
+def update_database(token: str, year: int = datetime.datetime.today().year, db: Session = Depends(get_db)):
     if token == TOKEN:
         db.query(Holiday).delete()
         db.commit()
-        day_parser(db)
+        day_parser(year, db)
         return {"Status": "200"}
     else:
-        return {"Status": "400", "Error": "Token is not acceptable"}
+        return {"Status": "400", "msg": "Token is not acceptable"}
 
 
 @app.get("/drop_database/{token}")
@@ -88,7 +79,7 @@ def drop_database(token, db: Session = Depends(get_db)):
         days = db.query(Holiday).all()
         return {"days": days}
     else:
-        return {"Status": "400", "Error": "Token is not acceptable"}
+        return {"Status": "400", "msg": "Token is not acceptable"}
 
 
 if __name__ == "__main__":

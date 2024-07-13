@@ -8,17 +8,6 @@ from database import engine
 Base = declarative_base()
 Base.metadata = MetaData()
 
-# Days = Table(
-#     "Days",
-#     metadata,
-#     Column("id", Integer, primary_key=True),
-#     Column("year", Integer, nullable=False),
-#     Column("month", String, nullable=False),
-#     Column("number", Integer, nullable=False),
-#     Column("type", String, nullable=False),
-#     Column("info", String, nullable=True),
-# )
-
 
 class Holiday(Base):
     __tablename__ = "Holiday"
@@ -32,12 +21,16 @@ class Holiday(Base):
 
 
 class HolidayBase(BaseModel):
-    year: int
-    month: str
-    number: int
-    type: str
+    year: Optional[int] = None
+    month: Optional[str] = None
+    number: Optional[int] = None
+    type: Optional[str] = None
     info: Optional[str] = None
 
+
+class HolidayError(HolidayBase):
+    status: Optional[int] = None
+    msg: Optional[str] = None
 
 
 
