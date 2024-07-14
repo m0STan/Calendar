@@ -5,7 +5,7 @@ import uvicorn
 from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models.models import Holiday, HolidayBase, HolidayError
+from models.models import Holiday, HolidayBase, HolidayError, HolidayPost
 from config import TOKEN
 from script import day_parser
 from const import Naming
@@ -31,11 +31,11 @@ def get_day(month: str, number: int, db: Session = Depends(get_db)):
         return {"status": 400, "msg": "Day not exist"}
 
 
-@app.post("/update_day_info/{month}/{number}", response_model=HolidayError, response_model_exclude_none=True)
-def update_day(month: str, number: int, info: str = None, db: Session = Depends(get_db)):
-    db_day = db.query(Holiday).filter_by(month=month, number=number).one_or_none()
+@app.post("/update_day_info/", response_model=HolidayError, response_model_exclude_none=True)
+def update_day(day: HolidayPost, db: Session = Depends(get_db)):
+    db_day = db.query(Holiday).filter_by(month=day.month, number=day.number).one_or_none()
     if db_day:
-        db_day.info = info
+        db_day.info = day.info
         db.commit()
         db.refresh(db_day)
         return db_day

@@ -33,11 +33,7 @@ class HolidayError(HolidayBase):
     msg: Optional[str] = None
 
 
-
-
-# def create_tables():
-#     engine.echo = False
-#     metadata.drop_all(engine)
-#     metadata.create_all(engine)
-#     engine.echo = True
-
+class HolidayPost(BaseModel):
+    month: str
+    number: int
+    info: Optional[str] = None
