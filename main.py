@@ -43,9 +43,9 @@ def update_day(day: HolidayPost, db: Session = Depends(get_db)):
         return {"status": 400, "msg": "Day not exist"}
 
 
-@app.post("/add_day/{year}/{month}/{number}", response_model=HolidayBase)
-def add_day(year: int, month: str, number: int, type: str, info: str = None, db: Session = Depends(get_db)):
-    db_day = Holiday(year=year, month=month, number=number, type=type, info=info)
+@app.post("/add_day/", response_model=HolidayBase)
+def add_day(day: HolidayPost, db: Session = Depends(get_db)):
+    db_day = Holiday(year=day.year, month=day.month, number=day.number, type=day.type, info=day.info)
     db.add(db_day)
     db.commit()
     db.refresh(db_day)

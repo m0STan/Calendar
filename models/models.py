@@ -34,6 +34,9 @@ class HolidayError(HolidayBase):
 
 
 class HolidayPost(BaseModel):
+    year: int
     month: str
     number: int
+    type: Optional[str] = None
     info: Optional[str] = None
+
