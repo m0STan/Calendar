@@ -81,5 +81,5 @@ def drop_database(token, db: Session = Depends(get_db)):
         return {"Status": "400", "msg": "Token is not acceptable"}
 
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

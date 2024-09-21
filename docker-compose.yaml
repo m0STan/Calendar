@@ -23,4 +23,6 @@ services:
       - .env
     depends_on:
       - db
+#    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head; python main.py'
+    command: "/bin/sh ./start.sh"
 

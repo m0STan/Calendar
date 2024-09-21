@@ -10,7 +10,7 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url", f"{DATABASE_URL}?async_fallback=True")
+config.set_main_option("sqlalchemy.url", f"{DATABASE_URL}")
 
 
 section = config.config_ini_section
