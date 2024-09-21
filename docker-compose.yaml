@@ -1,0 +1,26 @@
+
+services:
+  db:
+    container_name: db_postgres
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    volumes:
+      - .postgres:/var/lib/postgres/data
+    ports:
+      - 5431:5432
+    restart: always
+  app:
+    container_name: calendar-api
+    build: ./
+    volumes:
+      - .:/app
+    ports:
+      - ${APP_HOST_PORT}:8000
+    env_file:
+      - .env
+    depends_on:
+      - db
+
