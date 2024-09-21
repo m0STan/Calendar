@@ -8,7 +8,7 @@ git clone https://github.com/m0STan/Calendar
 ```
 Переходим в директорию приложения
 ```
-cd Calendar
+cd Calendars
 ```
 Сборка образа и запуск контейнера Docker
 ```
