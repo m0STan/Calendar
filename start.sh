@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #timeout 90s bash -c "until docker exec $DB_HOST pg_isready ; do sleep 5 ; done"
 
 ### Repeat command until port 5432 on address db is not ready.
